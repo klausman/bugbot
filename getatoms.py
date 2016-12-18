@@ -75,7 +75,6 @@ if __name__ == '__main__':
 
 		if args.security == True:
 			params['component'] = ['Vulnerabilities']
-
 		else:
 			params['component'] = ['Stabilization', 'Vulnerabilities']
 
