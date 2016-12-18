@@ -103,8 +103,6 @@ if __name__ == '__main__':
 	for bug in bugs:
 		list = bug['cf_stabilisation_atoms'].splitlines()
 
-		print('# bug #{}'.format(bug['id']))
-
 		if bug['depends_on']:
 			unresolved_depends = False
 
@@ -116,9 +114,11 @@ if __name__ == '__main__':
 					unresolved_depends = True
 					break
 			if unresolved_depends == True and args.no_depends == True:
-				print('# This bugs depends on other unresolved bugs, skipping')
-				print()
+				#print('# This bugs depends on other unresolved bugs, skipping')
+				#print()
 				continue
+
+		print('# bug #{}'.format(bug['id']))
 
 		for item in list:
 			if item[0] != '=':
