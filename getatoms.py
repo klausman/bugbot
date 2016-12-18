@@ -37,6 +37,7 @@ if __name__ == '__main__':
 	group.add_argument('-b', '--bug', type=int, help='bug to process')
 	parser.add_argument('-a', '--arch', type=str, help='target architecture (defaults to current)')
 	parser.add_argument('-n', '--no-depends', action='store_true', help='exclude bugs that depend on other bugs')
+	parser.add_argument('-s', '--security', action='store_true', help='fetch only security bugs')
 	args = parser.parse_args()
 
 	if len(sys.argv) == 1:
@@ -62,7 +63,6 @@ if __name__ == '__main__':
 	# all bugs
 	if args.bug is None:
 		params = {
-			'component': ['Stabilization', 'Vulnerabilities'],
 			'resolution': '---',
 			'email1': '{}@gentoo.org'.format(arch),
 			'emailassigned_to1': 1,
@@ -72,6 +72,13 @@ if __name__ == '__main__':
 			'o1': 'equals',
 			'v1': 'sanity-check+'
 		}
+
+		if args.security == True:
+			params['component'] = ['Vulnerabilities']
+
+		else:
+			params['component'] = ['Stabilization', 'Vulnerabilities']
+
 	# single bug
 	else:
 		params = {'id': args.bug}
