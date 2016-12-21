@@ -78,7 +78,7 @@ def main():
 			'v1': 'sanity-check+'
 		}
 
-		if args.security == True:
+		if args.security is True:
 			params['component'] = ['Vulnerabilities']
 		else:
 			params['component'] = ['Stabilization', 'Vulnerabilities']
@@ -107,7 +107,7 @@ def main():
 					unresolved_depends = True
 					break
 
-			if unresolved_depends == True and args.no_depends == True:
+			if unresolved_depends is True and args.no_depends is True:
 				eprint('# bug #{} depends on other unresolved bugs, skipping...'.format(bug['id']))
 				eprint()
 				continue
