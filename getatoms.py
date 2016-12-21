@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import argparse
+import base64
 import logging
 import portage
 import requests
@@ -20,16 +21,24 @@ def eprint(*args, **kwargs):
 	print(*args, file=sys.stderr, **kwargs)
 
 
-def get_bugs(params):
+def _bugzilla(path, params):
 	try:
-		response = session.get('https://bugs.gentoo.org/rest/bug', params=params).json()
+		response = session.get('https://bugs.gentoo.org/rest/' + path, params=params).json()
 	except Exception as e:
 		die('FATAL ERROR: API call failed: {}'.format(e))
 
 	if 'message' in response:
 		die('FATAL ERROR: API call failed: {}'.format(response['message']))
 
-	return response['bugs']
+	return response
+
+
+def get_attachments(bug):
+	return _bugzilla('bug/{}/attachment'.format(bug), {})['bugs'][str(bug)]
+
+
+def get_bugs(params):
+	return _bugzilla('bug', params)['bugs']
 
 
 def main():
@@ -92,7 +101,20 @@ def main():
 			eprint()
 			continue
 
-		if not bug['cf_stabilisation_atoms']:
+		atoms = ''
+		if bug['cf_stabilisation_atoms']:
+			atoms = bug['cf_stabilisation_atoms']
+		else:
+			attachments = get_attachments(bug['id'])
+			for attachment in attachments:
+				if attachment['is_obsolete'] == 1:
+					continue
+
+				for flag in attachment['flags']:
+					if flag['name'] == 'stabilization-list' and flag['status'] == '+':
+						atoms += base64.b64decode(attachment['data']).decode('ascii')
+
+		if not atoms:
 			eprint('# No atoms found in bug #{}, skipping...'.format(bug['id']))
 			eprint()
 			continue
@@ -114,7 +136,7 @@ def main():
 
 		print('# bug #{}'.format(bug['id']))
 
-		for line in bug['cf_stabilisation_atoms'].splitlines():
+		for line in atoms.splitlines():
 			atom, _, arches = line.partition(' ')
 			if not atom.startswith('='):
 				atom = '=' + atom
