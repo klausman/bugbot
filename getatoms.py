@@ -16,6 +16,10 @@ def die(message):
 	sys.exit(2)
 
 
+def eprint(*args, **kwargs):
+	print(*args, file=sys.stderr, **kwargs)
+
+
 def get_bugs(params):
 	try:
 		response = session.get('https://bugs.gentoo.org/rest/bug', params=params).json()
@@ -84,16 +88,17 @@ def main():
 	return_value = 1
 	for bug in bugs:
 		if arch_email not in bug['cc']:
-			print('# {} not in CC, nothing to do'.format(arch))
+			eprint('# {} is not in CC for bug #{}, skipping...'.format(arch, bug['id']))
+			eprint()
 			continue
 
 		if not bug['cf_stabilisation_atoms']:
-			print('# No atoms found, nothing to do')
+			eprint('# No atoms found in bug #{}, skipping...'.format(bug['id']))
+			eprint()
 			continue
 
 		if bug['depends_on']:
 			unresolved_depends = False
-
 			params = {'id': bug['depends_on']}
 			depends_bugs = get_bugs(params)
 
@@ -101,9 +106,10 @@ def main():
 				if depends_bug['status'] != 'RESOLVED':
 					unresolved_depends = True
 					break
+
 			if unresolved_depends == True and args.no_depends == True:
-				print('# This bugs depends on other unresolved bugs, skipping')
-				print()
+				eprint('# bug #{} depends on other unresolved bugs, skipping...'.format(bug['id']))
+				eprint()
 				continue
 
 		print('# bug #{}'.format(bug['id']))
