@@ -9,6 +9,7 @@ import requests
 import os
 import sys
 
+file = None
 session = requests.Session()
 
 
@@ -17,9 +18,14 @@ def die(message):
 	sys.exit(2)
 
 
-def eprint(*args, **kwargs):
+def error(*args, **kwargs):
 	print(*args, file=sys.stderr, **kwargs)
 
+def eprint(message):
+	print(message)
+
+	if file is not None:
+		file.write(message + '\n')
 
 def _bugzilla(path, params):
 	try:
@@ -46,6 +52,8 @@ def main():
 
 	This tool requires a Bugzilla API key to operate, read from the envvar APIKEY.
 	Generate one at https://bugs.gentoo.org/userprefs.cgi?tab=apikey
+
+	If the variable TESTFILE is defined, the batch_stabilize-compatible output will be written to that file.
 	'''
 	# logging.basicConfig(level=logging.DEBUG)
 
@@ -68,6 +76,10 @@ def main():
 		print('FATAL ERROR: Gentoo Bugzilla API key not defined.')
 		print('Generate one at https://bugs.gentoo.org/userprefs.cgi?tab=apikey and export in envvar APIKEY.')
 		return 2
+
+	if 'TESTFILE' in os.environ:
+		global file
+		file = open(os.environ['TESTFILE'], 'w')
 
 	arch = args.arch
 	if not arch:
@@ -106,8 +118,8 @@ def main():
 	return_value = 1
 	for bug in bugs:
 		if arch_email not in bug['cc']:
-			eprint('# {} is not in CC for bug #{}, skipping...'.format(arch, bug['id']))
-			eprint()
+			error('# {} is not in CC for bug #{}, skipping...'.format(arch, bug['id']))
+			error()
 			continue
 
 		atoms = ''
@@ -124,8 +136,8 @@ def main():
 						atoms += base64.b64decode(attachment['data']).decode('ascii')
 
 		if not atoms:
-			eprint('# No atoms found in bug #{}, skipping...'.format(bug['id']))
-			eprint()
+			error('# No atoms found in bug #{}, skipping...'.format(bug['id']))
+			error()
 			continue
 
 		if bug['depends_on']:
@@ -139,11 +151,11 @@ def main():
 					break
 
 			if unresolved_depends is True and args.no_depends is True:
-				eprint('# bug #{} depends on other unresolved bugs, skipping...'.format(bug['id']))
-				eprint()
+				error('# bug #{} depends on other unresolved bugs, skipping...'.format(bug['id']))
+				error()
 				continue
 
-		print('# bug #{}'.format(bug['id']))
+		eprint('# bug #{}'.format(bug['id']))
 
 		for line in atoms.splitlines():
 			atom, _, arches = line.partition(' ')
@@ -151,10 +163,13 @@ def main():
 				atom = '=' + atom
 
 			if not arches or arch in arches.split(' ') or '~' + arch in arches.split(' '):
-				print(atom)
+				eprint(atom)
 				return_value = 0
 
-		print()
+		eprint('')
+
+	if 'TESTFILE' in os.environ:
+		file.close()
 
 	return return_value
 
