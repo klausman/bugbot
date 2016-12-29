@@ -53,6 +53,9 @@ def main():
 	group = parser.add_mutually_exclusive_group(required=True)
 	group.add_argument('--all-bugs', action='store_true', help='process all bugs for the active architecture')
 	group.add_argument('-b', '--bug', type=int, help='bug to process')
+	buggroup = parser.add_mutually_exclusive_group(required=True)
+	buggroup.add_argument('--keywordreq', action='store_true', help='work on keywording bugs')
+	buggroup.add_argument('--stablereq', action='store_true', help='work on stabilisation bugs')
 	parser.add_argument('-a', '--arch', type=str, help='target architecture (defaults to current)')
 	parser.add_argument('-n', '--no-depends', action='store_true', help='exclude bugs that depend on other bugs')
 	parser.add_argument('--no-sanity-check', action='store_true', help='include bugs that are not marked as sanity checked')
@@ -90,10 +93,13 @@ def main():
 			params['o1'] = 'equals'
 			params['v1'] ='sanity-check+'
 
-		if args.security is True:
-			params['component'] = ['Vulnerabilities']
-		else:
-			params['component'] = ['Stabilization', 'Vulnerabilities']
+		if args.keywordreq is True:
+			params['component'] = ['Keywording']
+		elif args.stablereq is True:
+			if args.security is True:
+				params['component'] = ['Vulnerabilities']
+			else:
+				params['component'] = ['Stabilization', 'Vulnerabilities']
 
 	bugs = get_bugs(params)
 
@@ -144,7 +150,7 @@ def main():
 			if not atom.startswith('='):
 				atom = '=' + atom
 
-			if not arches or arch in arches.split(' '):
+			if not arches or arch in arches.split(' ') or '~' + arch in arches.split(' '):
 				print(atom)
 				return_value = 0
 
