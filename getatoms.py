@@ -55,6 +55,7 @@ def main():
 	group.add_argument('-b', '--bug', type=int, help='bug to process')
 	parser.add_argument('-a', '--arch', type=str, help='target architecture (defaults to current)')
 	parser.add_argument('-n', '--no-depends', action='store_true', help='exclude bugs that depend on other bugs')
+	parser.add_argument('--no-sanity-check', action='store_true', help='include bugs that are not marked as sanity checked')
 	parser.add_argument('-s', '--security', action='store_true', help='fetch only security bugs')
 	args = parser.parse_args()
 
@@ -82,10 +83,12 @@ def main():
 			'emailassigned_to1': 1,
 			'emailcc1': 1,
 			'emailtype1': 'equals',
-			'f1': 'flagtypes.name',
-			'o1': 'equals',
-			'v1': 'sanity-check+'
 		}
+
+		if args.no_sanity_check is not True:
+			params['f1'] = 'flagtypes.name'
+			params['o1'] = 'equals'
+			params['v1'] ='sanity-check+'
 
 		if args.security is True:
 			params['component'] = ['Vulnerabilities']
