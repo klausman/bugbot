@@ -61,7 +61,7 @@ def main():
 	group = parser.add_mutually_exclusive_group(required=True)
 	group.add_argument('--all-bugs', action='store_true', help='process all bugs for the active architecture')
 	group.add_argument('-b', '--bug', type=int, help='bug to process')
-	buggroup = parser.add_mutually_exclusive_group(required=True)
+	buggroup = parser.add_mutually_exclusive_group()
 	buggroup.add_argument('--keywordreq', action='store_true', help='work on keywording bugs')
 	buggroup.add_argument('--stablereq', action='store_true', help='work on stabilisation bugs')
 	parser.add_argument('-a', '--arch', type=str, help='target architecture (defaults to current)')
@@ -69,6 +69,10 @@ def main():
 	parser.add_argument('--no-sanity-check', action='store_true', help='include bugs that are not marked as sanity checked')
 	parser.add_argument('-s', '--security', action='store_true', help='fetch only security bugs')
 	args = parser.parse_args()
+
+	if args.all_bugs is True and args.keywordreq is False and args.stablereq is False:
+		print('--all-bugs must be called with one of --keywordreq or --stablereq')
+		return 2
 
 	if 'APIKEY' in os.environ:
 		session.params.update({'Bugzilla_api_key': os.environ['APIKEY']})
