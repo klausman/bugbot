@@ -8,6 +8,7 @@ import portage
 import requests
 import os
 import sys
+import xmlrpc.client
 
 file = None
 session = requests.Session()
@@ -37,10 +38,6 @@ def _bugzilla(path, params):
 		die('FATAL ERROR: API call failed: {}'.format(response['message']))
 
 	return response
-
-
-def get_attachments(bug):
-	return _bugzilla('bug/{}/attachment'.format(bug), {})['bugs'][str(bug)]
 
 
 def get_bugs(params):
@@ -118,7 +115,7 @@ def main():
 				params['component'] = ['Stabilization', 'Vulnerabilities']
 
 	bugs = get_bugs(params)
-
+	all_attachments = xmlrpc.client.ServerProxy('https://bugs.gentoo.org/xmlrpc.cgi').Bug.attachments({'ids': [ x['id'] for x in bugs ] })['bugs']
 	return_value = 1
 	for bug in bugs:
 		if arch_email not in bug['cc']:
@@ -128,16 +125,19 @@ def main():
 
 		atoms = ''
 		if bug['cf_stabilisation_atoms']:
-			atoms = bug['cf_stabilisation_atoms']
-		else:
-			attachments = get_attachments(bug['id'])
-			for attachment in attachments:
-				if attachment['is_obsolete'] == 1:
-					continue
+			atoms += bug['cf_stabilisation_atoms']
 
-				for flag in attachment['flags']:
-					if flag['name'] == 'stabilization-list' and flag['status'] == '+':
-						atoms += base64.b64decode(attachment['data']).decode('ascii')
+		for attachment in all_attachments[str(bug['id'])]:
+			if not attachment:
+				continue
+			if attachment['is_obsolete'] == 1:
+				continue
+
+			for flag in attachment['flags']:
+				if flag['name'] == 'stabilization-list' and flag['status'] == '+':
+					if atoms[-1] is not "\n":
+						atoms += "\n"
+					atoms += str(attachment['data'])
 
 		if not atoms:
 			error('# No atoms found in bug #{}, skipping...'.format(bug['id']))
