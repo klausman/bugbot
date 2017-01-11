@@ -115,6 +115,18 @@ def main():
 				params['component'] = ['Stabilization', 'Vulnerabilities']
 
 	bugs = get_bugs(params)
+	depends_bugs = []
+
+	for bug in bugs:
+		depends_bugs += bug['depends_on']
+
+	params = { 'id': depends_bugs }
+	depends_bugs = get_bugs(params)
+
+	depends_bugs_dict = {}
+	for bug in depends_bugs:
+		depends_bugs_dict[bug['id']] = bug
+
 	all_attachments = xmlrpc.client.ServerProxy('https://bugs.gentoo.org/xmlrpc.cgi').Bug.attachments({'ids': [ x['id'] for x in bugs ] })['bugs']
 	return_value = 1
 	for bug in bugs:
@@ -146,11 +158,9 @@ def main():
 
 		if bug['depends_on']:
 			unresolved_depends = False
-			params = {'id': bug['depends_on']}
-			depends_bugs = get_bugs(params)
 
-			for depends_bug in depends_bugs:
-				if depends_bug['status'] != 'RESOLVED':
+			for depends_bug in bug['depends_on']:
+				if depends_bugs_dict[depends_bug]['status'] != 'RESOLVED':
 					unresolved_depends = True
 					break
 
