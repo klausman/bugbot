@@ -160,9 +160,17 @@ def main():
 			unresolved_depends = False
 
 			for depends_bug in bug['depends_on']:
-				if depends_bugs_dict[depends_bug]['status'] != 'RESOLVED':
-					unresolved_depends = True
-					break
+				current_bug = depends_bugs_dict[depends_bug]
+
+				if current_bug['status'] == 'RESOLVED':
+					continue
+
+				if current_bug['component'] == 'Stabilization' or current_bug['component'] == 'Keywording':
+					if arch_email not in current_bug['cc']:
+						continue
+
+				unresolved_depends = True
+				break
 
 			if unresolved_depends is True and args.no_depends is True:
 				error('# bug #{} depends on other unresolved bugs, skipping...'.format(bug['id']))
