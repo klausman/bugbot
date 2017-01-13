@@ -180,6 +180,8 @@ def main():
 		eprint('# bug #{}'.format(bug['id']))
 
 		for line in atoms.splitlines():
+			if not line:
+				continue
 			atom, _, arches = line.partition(' ')
 			if not atom.startswith('='):
 				atom = '=' + atom
