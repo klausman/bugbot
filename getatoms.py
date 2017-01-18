@@ -166,8 +166,15 @@ def main():
 					continue
 
 				if current_bug['component'] == 'Stabilization' or current_bug['component'] == 'Keywording':
-					if arch_email not in current_bug['cc']:
-						continue
+
+					sanity_checked = False
+					for flag in current_bug['flags']:
+						if flag['name'] == 'sanity-check' and flag['status'] == '+':
+							sanity_checked = True
+							break
+
+					if arch_email not in current_bug['cc'] and sanity_checked:
+							continue
 
 				unresolved_depends = True
 				break
