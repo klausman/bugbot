@@ -120,8 +120,10 @@ def main():
 	for bug in bugs:
 		depends_bugs += bug['depends_on']
 
-	params = { 'id': depends_bugs }
-	depends_bugs = get_bugs(params)
+	# otherwise, id == '' which will query every single bug ever filed
+	if len(depends_bugs) >= 1:
+		params = { 'id': depends_bugs }
+		depends_bugs = get_bugs(params)
 
 	depends_bugs_dict = {}
 	for bug in depends_bugs:
