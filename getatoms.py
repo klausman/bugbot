@@ -186,6 +186,7 @@ def main():
 
 		eprint('# bug #{}'.format(bug['id']))
 
+		atoms_to_print = set()
 		for line in atoms.splitlines():
 			if not line:
 				continue
@@ -194,8 +195,9 @@ def main():
 				atom = '=' + atom
 
 			if not arches or arch in arches.split(' ') or '~' + arch in arches.split(' '):
-				eprint(atom)
+				atoms_to_print.add(atom)
 				return_value = 0
+		eprint("\n".join(sorted(atoms_to_print)))
 
 		eprint('')
 
