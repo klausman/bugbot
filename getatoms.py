@@ -165,7 +165,7 @@ def main():
 				if current_bug['status'] == 'RESOLVED':
 					continue
 
-				if current_bug['component'] == 'Stabilization' or current_bug['component'] == 'Keywording':
+				if current_bug['component'] in ['Stabilization', 'Keywording', 'Vulnerabilities']:
 
 					sanity_checked = False
 					for flag in current_bug['flags']:
