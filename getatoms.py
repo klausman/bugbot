@@ -147,7 +147,7 @@ def main():
 
 			for flag in attachment['flags']:
 				if flag['name'] == 'stabilization-list' and flag['status'] == '+':
-					if atoms[-1] is not "\n":
+					if atoms and atoms[-1] is not "\n":
 						atoms += "\n"
 					atoms += str(attachment['data'])
 
