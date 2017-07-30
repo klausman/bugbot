@@ -4,7 +4,6 @@ from __future__ import print_function
 import argparse
 import base64
 import logging
-import portage
 import requests
 import os
 import sys
