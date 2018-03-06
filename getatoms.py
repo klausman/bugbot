@@ -46,10 +46,10 @@ def get_bugs(params):
 def main():
 	'''Get atoms from a stabilisation bug.
 
-	This tool requires a Bugzilla API key to operate, read from the envvar APIKEY.
+	This tool requires a Bugzilla API key to operate, read from the envvar GETATOMS_APIKEY.
 	Generate one at https://bugs.gentoo.org/userprefs.cgi?tab=apikey
 
-	If the variable TESTFILE is defined, the batch_stabilize-compatible output will be written to that file.
+	If the variable GETATOMS_TESTFILE is defined, the batch_stabilize-compatible output will be written to that file.
 	'''
 	# logging.basicConfig(level=logging.DEBUG)
 
@@ -70,16 +70,16 @@ def main():
 		print('--all-bugs must be called with one of --keywordreq or --stablereq')
 		return 2
 
-	if 'APIKEY' in os.environ:
-		session.params.update({'Bugzilla_api_key': os.environ['APIKEY']})
+	if 'GETATOMS_APIKEY' in os.environ:
+		session.params.update({'Bugzilla_api_key': os.environ['GETATOMS_APIKEY']})
 	else:
 		print('FATAL ERROR: Gentoo Bugzilla API key not defined.')
-		print('Generate one at https://bugs.gentoo.org/userprefs.cgi?tab=apikey and export in envvar APIKEY.')
+		print('Generate one at https://bugs.gentoo.org/userprefs.cgi?tab=apikey and export in envvar GETATOMS_APIKEY.')
 		return 2
 
-	if 'TESTFILE' in os.environ:
+	if 'GETATOMS_TESTFILE' in os.environ:
 		global file
-		file = open(os.environ['TESTFILE'], 'w')
+		file = open(os.environ['GETATOMS_TESTFILE'], 'w')
 
 	arch = args.arch
 	if not arch:
@@ -200,7 +200,7 @@ def main():
 
 		eprint('')
 
-	if 'TESTFILE' in os.environ:
+	if 'GETATOMS_TESTFILE' in os.environ:
 		file.close()
 
 	return return_value
