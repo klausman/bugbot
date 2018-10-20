@@ -189,11 +189,11 @@ def main():
 		for line in atoms.splitlines():
 			if not line:
 				continue
-			atom, _, arches = line.partition(' ')
+			atom, *arches = line.split()
 			if not atom.startswith('='):
 				atom = '=' + atom
 
-			if not arches or arch in arches.split(' ') or '~' + arch in arches.split(' '):
+			if not arches or arch in arches or '~' + arch in arches:
 				atoms_to_print.add(atom)
 				return_value = 0
 		eprint("\n".join(sorted(atoms_to_print)))
